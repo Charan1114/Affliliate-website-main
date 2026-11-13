@@ -8,8 +8,9 @@ export async function onRequestPost({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const email = String(body.email || '').trim().toLowerCase();
+  const allowedEmails = env.ADMIN_EMAIL.split(',').map(value => value.trim().toLowerCase()).filter(Boolean);
   const password = String(body.password || '');
-  if (email !== env.ADMIN_EMAIL.trim().toLowerCase() || password.length < 1 || password !== env.ADMIN_PASSWORD) {
+  if (!allowedEmails.includes(email) || password.length < 1 || password !== env.ADMIN_PASSWORD) {
     return json({ error: 'Email or password is incorrect.' }, 401);
   }
   const token = await createSession(email, env.SESSION_SECRET);

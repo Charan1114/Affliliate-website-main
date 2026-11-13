@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { categories, posts } from './data.js';
 
-function Header({ onSearch }) {
+function Header({ onSearch, isDark, onToggleTheme }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <header className="header">
       <div className="shell header-inner">
-        <a className="brand" href="#" onClick={() => setMenuOpen(false)}><span className="brand-mark">✳</span><span>The Good Edit</span></a>
+        <a className="brand" href="#" onClick={() => setMenuOpen(false)}><span className="brand-mark">✳</span><span>JSV Deal Zone</span></a>
         <button className="menu-btn" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">☰</button>
         <nav className={menuOpen ? 'nav open' : 'nav'}>
           <a href="#guides" onClick={() => setMenuOpen(false)}>Buying guides</a>
           <a href="#categories" onClick={() => setMenuOpen(false)}>Categories</a>
           <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
         </nav>
-        <button className="search-btn" onClick={onSearch} aria-label="Search">⌕</button>
+        <div className="header-tools"><button className="theme-toggle" onClick={onToggleTheme} aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"} title={isDark ? "Switch to light mode" : "Switch to dark mode"}>{isDark ? "☀" : "☾"}</button><button className="search-btn" onClick={onSearch} aria-label="Search">⌕</button></div>
       </div>
     </header>
   );
@@ -33,6 +33,8 @@ function PostCard({ post, onOpen }) {
 
 export default function App() {
   const [activePost, setActivePost] = useState(null);
+  const [isDark, setIsDark] = useState(() => { try { return localStorage.getItem('jsv-theme') === 'dark'; } catch { return false; } });
+  useEffect(() => { document.documentElement.dataset.theme = isDark ? 'dark' : 'light'; try { localStorage.setItem('jsv-theme', isDark ? 'dark' : 'light'); } catch {} }, [isDark]);
   const [allPosts, setAllPosts] = useState(posts);
   useEffect(() => { fetch('/api/articles').then(r => r.ok ? r.json() : null).then(data => { if (data?.articles?.length) setAllPosts(data.articles); }).catch(() => {}); }, []);
   useEffect(() => { fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'page_view',path:window.location.pathname}) }).catch(() => {}); }, []);
@@ -54,7 +56,7 @@ export default function App() {
 
   return (
     <>
-      <Header onSearch={() => { setSearchOpen(!searchOpen); setActivePost(null); }} />
+      <Header isDark={isDark} onToggleTheme={() => setIsDark(v => !v)} onSearch={() => { setSearchOpen(!searchOpen); setActivePost(null); }} />
       {searchOpen && <div className="search-panel shell">
         <input autoFocus placeholder="Search practical guides..." value={query} onChange={e => { setQuery(e.target.value); setActivePost(null); }} />
         <button onClick={() => { setQuery(''); setSearchOpen(false); }}>Close</button>
@@ -114,17 +116,17 @@ export default function App() {
           </section>
 
           <section className="manifesto"><div className="shell manifesto-inner"><span className="manifesto-icon">▤</span><div><span className="eyebrow">OUR POINT OF VIEW</span><h2>Good shopping starts<br />with <em>good information.</em></h2></div><p>We make the details easier to understand, so you can spend less time comparing tabs and more time choosing what genuinely works for you.</p></div></section>
-          <section id="about" className="about section shell"><div><span className="eyebrow">A NOTE FROM THE EDIT</span><h2>Thoughtful finds.<br /><em>Zero noise.</em></h2></div><p>The Good Edit is an independent product discovery publication. We create practical guides to help readers make more informed everyday buying decisions. We aim to explain what matters, what to compare and what to consider before purchasing.</p></section>
+          <section id="about" className="about section shell"><div><span className="eyebrow">A NOTE FROM THE EDIT</span><h2>Thoughtful finds.<br /><em>Zero noise.</em></h2></div><p>JSV Deal Zone is an independent product discovery publication. We create practical guides to help readers make more informed everyday buying decisions. We aim to explain what matters, what to compare and what to consider before purchasing.</p></section>
         </main>
       )}
 
       <footer className="footer">
         <div className="shell footer-top">
-          <div><a className="brand" href="#"><span className="brand-mark">✳</span><span>The Good Edit</span></a><p>Less scrolling. Better decisions. Thoughtful guides for everyday life.</p></div>
+          <div><a className="brand" href="#"><span className="brand-mark">✳</span><span>JSV Deal Zone</span></a><p>Smart finds. Better deals. Thoughtful guides for everyday life.</p></div>
           <div><b>Explore</b><a href="#guides">Buying guides</a><a href="#categories">Categories</a></div>
           <div><b>Information</b><a href="#about">About us</a><a href="#disclosure">Affiliate disclosure</a><a href="#privacy">Privacy policy</a><a href="mailto:hello@example.com">Contact</a></div>
         </div>
-        <div className="shell footer-bottom"><span>© 2026 The Good Edit. All rights reserved.</span><span>As an Amazon Associate I earn from qualifying purchases.</span></div>
+        <div className="shell footer-bottom"><span>© 2026 JSV Deal Zone. All rights reserved.</span><span>As an Amazon Associate I earn from qualifying purchases.</span></div>
       </footer>
       <div id="disclosure" className="legal shell"><h2>Affiliate disclosure</h2><p>As an Amazon Associate I earn from qualifying purchases. Some links may be affiliate links, which means we may earn a commission if you purchase through them, at no additional cost to you. Our editorial content is intended to help readers make informed decisions.</p><h2 id="privacy">Privacy</h2><p>This starter site does not currently collect personal information or use analytics cookies. Update this notice before adding forms, analytics or other tracking technologies.</p></div>
     </>

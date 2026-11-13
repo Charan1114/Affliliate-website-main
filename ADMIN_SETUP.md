@@ -22,7 +22,7 @@ Open the Pages project `affliliate-website-main`:
 In the Pages project:
 1. **Settings → Variables and Secrets**.
 2. Add these as encrypted secrets (not plain-text build variables):
-   - `ADMIN_EMAIL`: the email you will use to log in.
+   - `ADMIN_EMAIL`: allowed admin email address(es), separated by commas. For two admins using the same password, enter `first@example.com,second@example.com`.
    - `ADMIN_PASSWORD`: a new, unique, strong password.
    - `SESSION_SECRET`: a random secret of at least 32 characters.
 3. Add them for the **Production** environment. Add Preview secrets only if you intend to test admin on preview deployments.
@@ -47,4 +47,4 @@ For this first CMS version, article and product images use image URLs. A later R
 
 ## 7. Security notes
 
-The admin session is an HttpOnly, Secure, SameSite cookie signed on the server and expires after eight hours. API writes require an authenticated session and same-origin requests. Use a unique admin password, enable MFA on your Cloudflare and GitHub accounts, and do not expose admin credentials.
+The admin session is an HttpOnly, Secure, SameSite cookie signed on the server and expires after eight hours. API writes require an authenticated session and same-origin requests. All listed admin emails currently share the same `ADMIN_PASSWORD`. Anyone who knows that shared password and has an allowed email can sign in. Use a strong password, enable MFA on your Cloudflare and GitHub accounts, and do not expose admin credentials.

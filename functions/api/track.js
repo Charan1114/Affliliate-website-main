@@ -13,7 +13,8 @@ export async function onRequestPost({ request, env }) {
   const referrer = request.headers.get('Referer') ? new URL(request.headers.get('Referer')).hostname.slice(0,160) : null;
   const ua = request.headers.get('User-Agent') || '';
   const device = /mobile|android|iphone/i.test(ua) ? 'mobile' : /ipad|tablet/i.test(ua) ? 'tablet' : 'desktop';
-  await env.DB.prepare('INSERT INTO analytics_events (event_type,page_path,article_slug,product_name,referrer_host,device_type) VALUES (?,?,?,?,?,?)')
-    .bind(type,path,slug,product,referrer,device).run();
+  const now = new Date().toISOString();
+  await env.DB.prepare('INSERT INTO analytics_events (event_type,page_path,article_slug,product_name,referrer_host,device_type,created_at) VALUES (?,?,?,?,?,?,?)')
+    .bind(type,path,slug,product,referrer,device,now).run();
   return json({ ok:true });
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { categories, posts } from './data.js';
 
 function Header({ onSearch }) {
@@ -33,15 +33,19 @@ function PostCard({ post, onOpen }) {
 
 export default function App() {
   const [activePost, setActivePost] = useState(null);
+  const [allPosts, setAllPosts] = useState(posts);
+  useEffect(() => { fetch('/api/articles').then(r => r.ok ? r.json() : null).then(data => { if (data?.articles?.length) setAllPosts(data.articles); }).catch(() => {}); }, []);
+  useEffect(() => { fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'page_view',path:window.location.pathname}) }).catch(() => {}); }, []);
+  useEffect(() => { if (activePost) fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:'page_view',path:'/articles/'+activePost.slug,slug:activePost.slug}) }).catch(() => {}); }, [activePost]);
   const [category, setCategory] = useState('all');
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const filteredPosts = useMemo(() => posts.filter(post => {
+  const filteredPosts = useMemo(() => allPosts.filter(post => {
     const matchesCategory = category === 'all' || categories.find(c => c.name === post.category)?.slug === category;
     const text = [post.title, post.excerpt, post.category].join(' ').toLowerCase();
     return matchesCategory && text.includes(query.toLowerCase());
-  }), [category, query]);
+  }), [allPosts, category, query]);
 
   const openPost = post => {
     setActivePost(post);
@@ -69,6 +73,7 @@ export default function App() {
           <div className="article-body">
             <p className="lead">{activePost.intro}</p>
             {activePost.sections.map(([heading, body]) => <section key={heading}><h2>{heading}</h2><p>{body}</p></section>)}
+            {activePost.products?.length > 0 && <section className="article-products"><h2>Products in this guide</h2>{activePost.products.map(product => <div className="article-product" key={product.id || product.name}>{product.image && <img src={product.image} alt={product.name}/>}<div><h3>{product.name}</h3>{product.price && <strong>{product.price}</strong>}<p>{product.description}</p><a href={product.affiliateUrl} target="_blank" rel="sponsored nofollow noopener" onClick={() => fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'affiliate_click',path:'/articles/'+activePost.slug,slug:activePost.slug,product:product.name})}).catch(()=>{})}>Check price on Amazon ↗</a></div></div>)}</section>}
             <div className="note"><strong>Editorial note</strong><p>This guide is for general information. Check current product details, compatibility, pricing and seller terms before making a purchase.</p></div>
             <p className="disclosure">As an Amazon Associate I earn from qualifying purchases. This site may contain affiliate links. If you buy through them, we may earn a commission at no extra cost to you.</p>
           </div>
